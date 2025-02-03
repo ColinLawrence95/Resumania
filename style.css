@@ -1,0 +1,49 @@
+body {
+    background: url(./images/background1.jpg) no-repeat center center fixed;
+    display: flex;
+    justify-content: center;  /* Centers horizontally */
+    align-items: center;      /* Centers vertically */
+    height: 100vh;            /* Makes the body take up the full height of the viewport */
+    margin: 0;                /* Removes default margin */
+}
+
+.board {
+    display: none;
+    flex-wrap: wrap;
+    width: 700px;
+    border: 2px solid black;
+}
+
+.sqr {
+    width: 20%;
+    aspect-ratio: 1/1;
+    font-size: 64px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.title {       
+    font-size: 32px;          
+    color: rgb(0, 0, 0);             
+    text-align: center;         
+    display: flex;
+    flex-direction: column;    
+    align-items: center;         
+}
+#instructions{
+    display: flex;
+}
+
+#play{
+    background-color: red;
+    color: white;
+    display: flex;
+    width: 40px;
+}
+.container {
+    display: flex;
+    flex-direction: column;   /* Stack the title and board vertically */
+    align-items: center;      /* Center both title and board horizontally */
+    justify-content: center;  /* Center vertically if needed */
+    text-align: center;       /* Ensure text in title is centered */
+}

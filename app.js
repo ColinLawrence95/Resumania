@@ -1,16 +1,38 @@
-let board = [
-    [0, 0, 0, 0, 0],
-    Array.from({ length: 5 }, () => Math.floor(Math.random() * 2)),
-    Array.from({ length: 5 }, () => Math.floor(Math.random() * 2)),
-    Array.from({ length: 5 }, () => Math.floor(Math.random() * 2)),
-    Array.from({ length: 5 }, () => Math.floor(Math.random() * 2)),
-    Array.from({ length: 5 }, () => Math.floor(Math.random() * 2)),
-    [0, 0, 0, 0, 0],
-];
+let board = [];
 let playerPosition = { row: 0, col: 2 };
-let isDead = false;
-let hasWon = false;
+let isDead;
+let hasWon;
+const winSound = new Audio("./sounds/winSound.mp3");
+const loseSound = new Audio("./sounds/loseSound.mp3");
+const playBtnElement = document.querySelector("#play");
+const boardDisplayElement = document.querySelector(".board");
+const instructionsElement = document.querySelector("#insructions")
 // Function to update the board and display values
+
+function init() {
+    board = [
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+    ];
+    isDead = false;
+    hasWon = false;
+}
+
+function startGame() {
+    boardDisplayElement.style.display = "flex";
+    playBtnElement.style.display = "none";
+    instructionsElement.style.display = "none";
+    console.log(instructionsElement);
+    init();
+    updateBoard();
+    setInterval(scrollHazards, 500);
+}
+
 function updateBoard() {
     // Loop through each row
     board.forEach((row, rowIndex) => {
@@ -23,15 +45,23 @@ function updateBoard() {
             // Display the value of the cell (1 or 0) inside the square div
             square.textContent = cell; // Show 1 or 0 in the square
             if (cell === 1) {
-                square.style.backgroundColor = "red"; // Set background to red if the value is 1
+                if (rowIndex === 1 || rowIndex === 3 || rowIndex === 5) {
+                    square.textContent = "🚗";
+                    square.style.backgroundColor = "red"; // Set background to red if the value is 1
+                } else {
+                    square.textContent = "🚶‍➡️";
+                    square.style.backgroundColor = "orange";
+                }
             } else {
-                square.style.backgroundColor = "white"; // Set background to white if the value is 0
+                square.style.backgroundColor = "transparent"; // Set background to white if the value is 0
+                square.textContent = "";
             }
             if (
                 playerPosition.row === rowIndex &&
                 playerPosition.col === colIndex
             ) {
-                square.textContent = "P";
+                square.textContent = "📃";
+                square.style.backgroundColor = "lightblue";
             }
         });
     });
@@ -39,15 +69,22 @@ function updateBoard() {
     checkWin();
 }
 function checkWin() {
-    if (playerPosition.row === 6) {
+    if (playerPosition.row === 6 && !hasWon) {
         hasWon = true;
         console.log("Player Wins");
+        winSound.currentTime = 0.9;
+        winSound.play();
     }
 }
 function hazardCollision() {
     if (board[playerPosition.row][playerPosition.col] === 1) {
         isDead = true;
         console.log("Player Dead");
+        loseSound.currentTime = 0.6;
+        loseSound.play();
+        playerPosition.row = 0;
+        playerPosition.col = 2;
+        updateBoard();
     }
 }
 function scrollHazards() {
@@ -102,5 +139,4 @@ function movePlayer(event) {
     }
 }
 document.addEventListener("keydown", movePlayer);
-
-setInterval(scrollHazards, 1000);
+document.querySelector("#play").addEventListener("click", startGame);
