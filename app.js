@@ -1,12 +1,15 @@
 let board = [];
-let playerPosition = { row: 0, col: 2 };
+let playerPosition;
 let isDead;
 let hasWon;
+let scrollInProgress = false;
 const winSound = new Audio("./sounds/winSound.mp3");
 const loseSound = new Audio("./sounds/loseSound.mp3");
+const backgroundMusic = new Audio("./sounds/backgroundMusic.mp3");
 const playBtnElement = document.querySelector("#play");
 const boardDisplayElement = document.querySelector(".board");
 const instructionsElement = document.querySelector("#insructions")
+
 // Function to update the board and display values
 
 function init() {
@@ -21,13 +24,14 @@ function init() {
     ];
     isDead = false;
     hasWon = false;
+    playerPosition = { row: 0, col: 2 };
+    playBackgroundMusic();
 }
 
 function startGame() {
     boardDisplayElement.style.display = "flex";
     playBtnElement.style.display = "none";
     instructionsElement.style.display = "none";
-    console.log(instructionsElement);
     init();
     updateBoard();
     setInterval(scrollHazards, 500);
@@ -47,13 +51,10 @@ function updateBoard() {
             if (cell === 1) {
                 if (rowIndex === 1 || rowIndex === 3 || rowIndex === 5) {
                     square.textContent = "🚗";
-                    square.style.backgroundColor = "red"; // Set background to red if the value is 1
                 } else {
                     square.textContent = "🚶‍➡️";
-                    square.style.backgroundColor = "orange";
                 }
             } else {
-                square.style.backgroundColor = "transparent"; // Set background to white if the value is 0
                 square.textContent = "";
             }
             if (
@@ -61,7 +62,6 @@ function updateBoard() {
                 playerPosition.col === colIndex
             ) {
                 square.textContent = "📃";
-                square.style.backgroundColor = "lightblue";
             }
         });
     });
@@ -87,6 +87,7 @@ function hazardCollision() {
         updateBoard();
     }
 }
+
 function scrollHazards() {
     // Apply the logic only to board[0], board[2], and board[4]
     [1, 3, 5].forEach((rowIndex) => {
@@ -137,6 +138,11 @@ function movePlayer(event) {
             }
             break;
     }
+}
+function playBackgroundMusic(){
+    backgroundMusic.volume = 0.02;
+    backgroundMusic.play();
+
 }
 document.addEventListener("keydown", movePlayer);
 document.querySelector("#play").addEventListener("click", startGame);
