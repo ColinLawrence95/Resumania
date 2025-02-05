@@ -3,13 +3,20 @@ let playerPosition;
 let isDead;
 let hasWon;
 let scrollInProgress = false;
+let firstPlaythrough = true;
+let scrollSpeed = 750;
 const winSound = new Audio("./sounds/winSound.mp3");
-const loseSound = new Audio("./sounds/loseSound.mp3");
+const loseSound = new Audio("./sounds/loseSound.wav");
 const backgroundMusic = new Audio("./sounds/backgroundMusic.mp3");
+const moveSound = new Audio("./sounds/moveSound.wav");
+const playSound = new Audio("./sounds/playSound.wav");
 const playBtnElement = document.querySelector("#play");
 const boardDisplayElement = document.querySelector(".board");
-const instructionsElement = document.querySelector("#insructions");
-
+const instructionsElement = document.querySelector("#instructions");
+const titleElement = document.querySelector("#title-text");
+const playAgainElement = document.querySelector("#restart");
+const uiBtnElement = document.querySelector(".ui-button");
+const playerSprite = document.createElement("img");
 // Function to update the board and display values
 
 function init() {
@@ -25,17 +32,24 @@ function init() {
     isDead = false;
     hasWon = false;
     playerPosition = { row: 0, col: 2 };
-    playBackgroundMusic();
+    if (firstPlaythrough) {
+        playBackgroundMusic();
+        firstPlaythrough = false;
+    }
+    playPlaySound();
+  
 }
 
 function startGame() {
     boardDisplayElement.style.display = "flex";
     playBtnElement.style.display = "none";
     instructionsElement.style.display = "none";
-
+    uiBtnElement.style.display = "flex";
     init();
     updateBoard();
-    setInterval(scrollHazards, 500);
+    setInterval(scrollHazards, scrollSpeed);
+    setInterval(updateBoard, scrollSpeed);
+   
 }
 
 // Update the board to render the 🚗 hazard
@@ -65,8 +79,17 @@ function updateBoard() {
             }
 
             // Check if the player is in the current cell
-            if (playerPosition.row === rowIndex && playerPosition.col === colIndex) {
-                square.textContent = "📃"; // Player represented as paper
+            if (
+                playerPosition.row === rowIndex &&
+                playerPosition.col === colIndex
+            ) {
+                playerSprite.src = "./images/playerSprite.png"; // Path to your image
+                playerSprite.alt = "Player";
+                playerSprite.classList.add("player"); // You can add any specific class for styling
+
+                // Clear previous content and append the image
+                square.textContent = "";
+                square.appendChild(playerSprite);
             }
         });
     });
@@ -74,6 +97,7 @@ function updateBoard() {
     // Check for any collisions
     hazardCollision();
     checkWin();
+    displayWin();
 }
 
 function checkWin() {
@@ -87,17 +111,17 @@ function checkWin() {
 function hazardCollision() {
     // Check if there’s a hazard where the player is standing
     if (board[playerPosition.row][playerPosition.col] === 1) {
-        isDead = true;  // Player is dead
+        isDead = true; // Player is dead
         console.log("Player Dead");
-        loseSound.currentTime = 0.6;
+        loseSound.currentTime = 0;
+        loseSound.volume = 0.1;
         loseSound.play();
         // Reset player position (optional: could add a restart screen here)
         playerPosition.row = 0;
         playerPosition.col = 2;
-        updateBoard();  // Re-render board with new player position
+        updateBoard(); // Re-render board with new player position
     }
 }
-
 
 // Scroll hazards by shifting rows left or right
 function scrollHazards() {
@@ -114,46 +138,71 @@ function scrollHazards() {
         row.shift(); // Remove the first element from the row
         row.push(Math.floor(Math.random() * 2)); // Add a random 0 or 1 at the end of the row
     });
-
-    updateBoard(); // Re-render the board after scrolling hazards
 }
 
-
 function movePlayer(event) {
-    switch (event.key) {
-        case "ArrowLeft":
-            if (playerPosition.col < 4) {
-                // console.log("left");
-                playerPosition.col++;
-                updateBoard();
-            }
-            break;
-        case "ArrowRight":
-            if (playerPosition.col > 0) {
-                playerPosition.col--;
-                updateBoard();
-                // console.log("Right");
-            }
-            break;
-        case "ArrowUp":
-            if (playerPosition.row < 6) {
-                // console.log("Up");
-                playerPosition.row++;
-                updateBoard();
-            }
-            break;
-        case "ArrowDown":
-            if (playerPosition.row > 0) {
-                // console.log("Down");
-                playerPosition.row--;
-                updateBoard();
-            }
-            break;
+    if (!hasWon) {
+        switch (event.key) {
+            case "a":
+                if (playerPosition.col < 4) {
+                    // console.log("left");
+                    playerPosition.col++;
+                    updateBoard();
+                    playMoveSound();
+                }
+                break;
+            case "d":
+                if (playerPosition.col > 0) {
+                    playerPosition.col--;
+                    updateBoard();
+                    playMoveSound();
+                    // console.log("Right");
+                }
+                break;
+            case "w":
+                if (playerPosition.row < 6) {
+                    // console.log("Up");
+                    playerPosition.row++;
+                    updateBoard();
+                    playMoveSound();
+                }
+                break;
+            case "s":
+                if (playerPosition.row > 0) {
+                    // console.log("Down");
+                    playerPosition.row--;
+                    updateBoard();
+                    playMoveSound();
+                }
+                break;
+        }
+    }
+    if (event.key === "r") {
+        init();
+        updateBoard();
     }
 }
 function playBackgroundMusic() {
     backgroundMusic.volume = 0.02;
     backgroundMusic.play();
 }
+function playMoveSound() {
+    moveSound.currentTime = 0;
+    moveSound.volume = 0.2;
+    moveSound.play();
+}
+function playPlaySound() {
+    playSound.currentTime = 0;
+    playSound.volume = 0.2;
+    playSound.play();
+}
+function displayWin() {
+    if (hasWon) {
+        titleElement.textContent = "YOU WIN!!!";
+    } else if (!hasWon) {
+        titleElement.textContent = "RESUMANIA";
+    }
+}
 document.addEventListener("keydown", movePlayer);
 document.querySelector("#play").addEventListener("click", startGame);
+document.querySelector("#restart").addEventListener("click", init);
