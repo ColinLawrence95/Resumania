@@ -52,8 +52,7 @@ function startGame() {
    
 }
 
-// Update the board to render the 🚗 hazard
-// Update the board to render the 🚗 hazard and synchronize with player
+
 function updateBoard() {
     board.forEach((row, rowIndex) => {
         row.forEach((cell, colIndex) => {
@@ -68,7 +67,7 @@ function updateBoard() {
                     square.classList.add("hazardLeft");
                     square.classList.remove("hazardRight");
                 } else {
-                    square.textContent = "🚶‍➡️"; // Hazard is a pedestrian moving right
+                    square.textContent = "🚶‍♂️‍➡️"; // Hazard is a pedestrian moving right
                     square.classList.add("hazardRight");
                     square.classList.remove("hazardLeft");
                 }
