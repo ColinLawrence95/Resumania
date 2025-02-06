@@ -5,6 +5,7 @@ let hasWon;
 let scrollInProgress = false;
 let firstPlaythrough = true;
 let scrollSpeed = 20;
+let difficulty = 50;
 const winSound = new Audio("./sounds/winSound.mp3");
 const loseSound = new Audio("./sounds/loseSound.wav");
 const backgroundMusic = new Audio("./sounds/backgroundMusic.mp3");
@@ -107,8 +108,8 @@ function scrollHazards() {
         let row = board[rowIndex];
         // Remove the last element from the row
         row.pop();
-        // Insert a random 0 or 1 at the beginning
-        row.unshift(Math.floor(Math.random() * 50));
+        //1 in diffiulty's value chance to be a hazard
+        row.unshift(Math.floor(Math.random() * difficulty));
     });
 
     // For hazards moving right (rows 2, 4)
@@ -117,8 +118,8 @@ function scrollHazards() {
         let row = board[rowIndex];
         // Remove the first element from the row
         row.shift();
-        // Add a random 0 or 1 at the end of the row
-        row.push(Math.floor(Math.random() * 50));
+        //1 in diffiulty's value chance to be a hazard
+        row.push(Math.floor(Math.random() * difficulty));
     });
     updateBoard();
 }
@@ -132,29 +133,35 @@ function movePlayer(event) {
         switch (event.key) {
             //move left
             case "a":
-                playerPosition.col = playerPosition.col - 20;
-                updateBoard();
-                playMoveSound();
-
+                if (playerPosition.col > 10) {
+                    playerPosition.col = playerPosition.col - 20;
+                    updateBoard();
+                    playMoveSound();
+                }
                 break;
             //move right
             case "d":
-                playerPosition.col = playerPosition.col + 20;
-                playMoveSound();
-                updateBoard();
-
+                if (playerPosition.col < 80) {
+                    playerPosition.col = playerPosition.col + 20;
+                    playMoveSound();
+                    updateBoard();
+                }
                 break;
             //move up
             case "w":
-                playerPosition.row--;
-                playMoveSound();
-                updateBoard();
+                if (playerPosition.row <= 6) {
+                    playerPosition.row--;
+                    playMoveSound();
+                    updateBoard();
+                }
                 break;
             //move down
             case "s":
-                playerPosition.row++;
-                playMoveSound();
-                updateBoard();
+                if (playerPosition.row < 6) {
+                    playerPosition.row++;
+                    playMoveSound();
+                    updateBoard();
+                }
                 break;
         }
     }
