@@ -4,7 +4,7 @@ let isDead;
 let hasWon;
 let scrollInProgress = false;
 let firstPlaythrough = true;
-let scrollSpeed = 750;
+let scrollSpeed = 20;
 const winSound = new Audio("./sounds/winSound.mp3");
 const loseSound = new Audio("./sounds/loseSound.wav");
 const backgroundMusic = new Audio("./sounds/backgroundMusic.mp3");
@@ -17,190 +17,233 @@ const titleElement = document.querySelector("#title-text");
 const playAgainElement = document.querySelector("#restart");
 const uiBtnElement = document.querySelector(".ui-button");
 const playerSprite = document.createElement("img");
-// Function to update the board and display values
 
+/**
+ * Initalizing game values tto there starting position
+ */
 function init() {
     board = [
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
+        new Array(100).fill(0),
+        new Array(100).fill(0),
+        new Array(100).fill(0),
+        new Array(100).fill(0),
+        new Array(100).fill(0),
+        new Array(100).fill(0),
+        new Array(100).fill(0),
     ];
     isDead = false;
     hasWon = false;
-    playerPosition = { row: 0, col: 2 };
+    //play start position
+    playerPosition = { row: 6, col: 50 };
+    //making sure music and board wont be regenerated
     if (firstPlaythrough) {
+        createBoard();
         playBackgroundMusic();
         firstPlaythrough = false;
     }
     playPlaySound();
-  
 }
-
+/**
+ * Displaying board and hiding Instruction values
+ */
 function startGame() {
     boardDisplayElement.style.display = "flex";
     playBtnElement.style.display = "none";
     instructionsElement.style.display = "none";
     uiBtnElement.style.display = "flex";
     init();
-    updateBoard();
     setInterval(scrollHazards, scrollSpeed);
-    setInterval(updateBoard, scrollSpeed);
-   
 }
-
-
-function updateBoard() {
-    board.forEach((row, rowIndex) => {
-        row.forEach((cell, colIndex) => {
-            const square = document.getElementById(
-                `h${rowIndex * 5 + (colIndex + 1)}`
-            );
-
-            // Check if there's a hazard in the current cell
-            if (cell === 1) {
-                if (rowIndex === 1 || rowIndex === 3 || rowIndex === 5) {
-                    square.textContent = "🚗"; // Hazard is a car moving left
-                    square.classList.add("hazardLeft");
-                    square.classList.remove("hazardRight");
-                } else {
-                    square.textContent = "🚶‍♂️‍➡️"; // Hazard is a pedestrian moving right
-                    square.classList.add("hazardRight");
-                    square.classList.remove("hazardLeft");
-                }
-            } else {
-                square.textContent = "";
-                square.classList.remove("hazardLeft");
-                square.classList.remove("hazardRight");
-            }
-
-            // Check if the player is in the current cell
-            if (
-                playerPosition.row === rowIndex &&
-                playerPosition.col === colIndex
-            ) {
-                playerSprite.src = "./images/playerSprite.png"; // Path to your image
-                playerSprite.alt = "Player";
-                playerSprite.classList.add("player"); // You can add any specific class for styling
-
-                // Clear previous content and append the image
-                square.textContent = "";
-                square.appendChild(playerSprite);
-            }
-        });
-    });
-
-    // Check for any collisions
-    hazardCollision();
-    checkWin();
-    displayWin();
-}
-
+/**
+ * Checking if player had made it to the end and hasn't already won
+ */
 function checkWin() {
-    if (playerPosition.row === 6 && !hasWon) {
+    if (playerPosition.row === 0 && !hasWon) {
+        //player wins
         hasWon = true;
-        console.log("Player Wins");
+        //play winSOund
         winSound.currentTime = 0.9;
         winSound.play();
     }
 }
+/**
+ * Checking if a hazard hits the player
+ */
 function hazardCollision() {
-    // Check if there’s a hazard where the player is standing
-    if (board[playerPosition.row][playerPosition.col] === 1) {
-        isDead = true; // Player is dead
-        console.log("Player Dead");
-        loseSound.currentTime = 0;
-        loseSound.volume = 0.1;
-        loseSound.play();
-        // Reset player position (optional: could add a restart screen here)
-        playerPosition.row = 0;
-        playerPosition.col = 2;
-        updateBoard(); // Re-render board with new player position
+    // Check if there’s a hazard within 5 horizontal grid spaces
+    for (let offset = -7; offset <= 7; offset++) {
+        if (offset === 0) continue;
+
+        // Calculate the column to check (current column + offset)
+        const checkCol = playerPosition.col + offset;
+
+        // Make sure the check is within the valid board boundaries
+        if (checkCol >= 0 && checkCol < board[0].length) {
+            // Check if there's a hazard in this position
+            if (board[playerPosition.row][checkCol] === 1) {
+                //kill player
+                isDead = true;
+                //play death sound
+                loseSound.currentTime = 0;
+                loseSound.volume = 0.1;
+                loseSound.play();
+                //reset to sttarting positon
+                playerPosition.row = 6;
+                playerPosition.col = 50;
+                //exit functtion
+                return;
+            }
+        }
     }
 }
 
-// Scroll hazards by shifting rows left or right
+/**
+ * pushes shifts unshifts and pops values into the hazard rows in alternating directions
+ */
 function scrollHazards() {
     // For hazards moving left (rows 1, 3, 5)
     [1, 3, 5].forEach((rowIndex) => {
-        let row = board[rowIndex]; // Get the row based on rowIndex
-        row.pop(); // Remove the last element from the row
-        row.unshift(Math.floor(Math.random() * 2)); // Insert a random 0 or 1 at the beginning
+        // Get the row based on rowIndex
+        let row = board[rowIndex];
+        // Remove the last element from the row
+        row.pop();
+        // Insert a random 0 or 1 at the beginning
+        row.unshift(Math.floor(Math.random() * 50));
     });
 
     // For hazards moving right (rows 2, 4)
     [2, 4].forEach((rowIndex) => {
+        // Get the row based on rowIndex
         let row = board[rowIndex];
-        row.shift(); // Remove the first element from the row
-        row.push(Math.floor(Math.random() * 2)); // Add a random 0 or 1 at the end of the row
+        // Remove the first element from the row
+        row.shift();
+        // Add a random 0 or 1 at the end of the row
+        row.push(Math.floor(Math.random() * 50));
     });
+    updateBoard();
 }
-
+/**
+ * Controls player movement and limits movement to existt within the board.
+ * @param {keyDown} event
+ */
 function movePlayer(event) {
+    //locks movement if in final row
     if (!hasWon) {
         switch (event.key) {
+            //move left
             case "a":
-                if (playerPosition.col < 4) {
-                    // console.log("left");
-                    playerPosition.col++;
-                    updateBoard();
-                    playMoveSound();
-                }
+                playerPosition.col = playerPosition.col - 20;
+                updateBoard();
+                playMoveSound();
+
                 break;
+            //move right
             case "d":
-                if (playerPosition.col > 0) {
-                    playerPosition.col--;
-                    updateBoard();
-                    playMoveSound();
-                    // console.log("Right");
-                }
+                playerPosition.col = playerPosition.col + 20;
+                playMoveSound();
+                updateBoard();
+
                 break;
+            //move up
             case "w":
-                if (playerPosition.row < 6) {
-                    // console.log("Up");
-                    playerPosition.row++;
-                    updateBoard();
-                    playMoveSound();
-                }
+                playerPosition.row--;
+                playMoveSound();
+                updateBoard();
                 break;
+            //move down
             case "s":
-                if (playerPosition.row > 0) {
-                    // console.log("Down");
-                    playerPosition.row--;
-                    updateBoard();
-                    playMoveSound();
-                }
+                playerPosition.row++;
+                playMoveSound();
+                updateBoard();
                 break;
         }
     }
+    //resets game
     if (event.key === "r") {
         init();
-        updateBoard();
     }
 }
+/**
+ * Plays background music for game
+ */
 function playBackgroundMusic() {
     backgroundMusic.volume = 0.02;
     backgroundMusic.play();
 }
+/**
+ * plays sound on player move
+ */
 function playMoveSound() {
     moveSound.currentTime = 0;
     moveSound.volume = 0.2;
     moveSound.play();
 }
+/**
+ * plays "playSound"
+ */
 function playPlaySound() {
     playSound.currentTime = 0;
     playSound.volume = 0.2;
     playSound.play();
 }
+/**
+ * Changes title value if player wins
+ */
 function displayWin() {
     if (hasWon) {
-        titleElement.textContent = "YOU WIN!!!";
+        titleElement.textContent = "WINNER!";
     } else if (!hasWon) {
         titleElement.textContent = "RESUMANIA";
     }
+}
+/**
+ * Dynamically creates the board
+ */
+function createBoard() {
+    for (let rowIndex = 0; rowIndex < 7; rowIndex++) {
+        for (let colIndex = 0; colIndex < 100; colIndex++) {
+            const square = document.createElement("div");
+            square.classList.add("sqr");
+            square.id = `h${rowIndex * 100 + colIndex}`;
+            boardDisplayElement.appendChild(square);
+        }
+    }
+}
+/**
+ * Displaying content on the board in the grid squares
+ */
+function updateBoard() {
+    board.forEach((row, rowIndex) => {
+        row.forEach((cell, colIndex) => {
+            const square = document.getElementById(
+                `h${rowIndex * 100 + colIndex}`
+            );
+            // Check if there's a hazard in the current cell and displaying hazard sprite
+            if (cell === 1) {
+                if (rowIndex === 1 || rowIndex === 3 || rowIndex === 5) {
+                    square.textContent = "🚶‍♂️‍➡️";
+                } else {
+                    square.textContent = "🚗";
+                }
+                //displaying nothing if no hazard in cell
+            } else {
+                square.textContent = "";
+            }
+            // Check if the player is in the current cell
+            if (
+                playerPosition.row === rowIndex &&
+                playerPosition.col === colIndex
+            ) {
+                //if it is change the content to player sprite
+                playerSprite.src = "./images/playerSprite.png";
+                playerSprite.alt = "Player";
+                square.appendChild(playerSprite);
+            }
+        });
+    });
+    hazardCollision();
+    checkWin();
+    displayWin();
 }
 document.addEventListener("keydown", movePlayer);
 document.querySelector("#play").addEventListener("click", startGame);
