@@ -5,7 +5,7 @@ let hasWon;
 let scrollInProgress = false;
 let firstPlaythrough = true;
 let scrollSpeed = 20;
-let difficulty = 50;
+let difficulty = 60;
 let lives;
 let level;
 let decideHazard;
@@ -87,7 +87,11 @@ function hazardCollision() {
         // Make sure the check is within the valid board boundaries
         if (checkCol >= 0 && checkCol < board[0].length) {
             // Check if there's a hazard in this position
-            if (board[playerPosition.row][checkCol] === 1) {
+            if (
+                board[playerPosition.row][checkCol] === 1 ||
+                board[playerPosition.row][checkCol] === 2 ||
+                board[playerPosition.row][checkCol] === 3
+            ) {
                 //kill player
                 lives--;
                 console.log(lives);
@@ -105,7 +109,6 @@ function hazardCollision() {
         }
     }
 }
-
 /**
  * pushes shifts unshifts and pops values into the hazard rows in alternating directions
  */
@@ -117,7 +120,7 @@ function scrollHazards() {
         // Remove the last element from the row
         row.pop();
         //1 in diffiulty's value chance to be a hazard
-        row.unshift(Math.floor(Math.random() * difficulty));
+        row.unshift(Math.floor(Math.random() * difficulty * 3));
     });
 
     // For hazards moving right (rows 2, 4)
@@ -127,7 +130,7 @@ function scrollHazards() {
         // Remove the first element from the row
         row.shift();
         //1 in diffiulty's value chance to be a hazard
-        row.push(Math.floor(Math.random() * difficulty));
+        row.push(Math.floor(Math.random() * difficulty * 3));
     });
     updateBoard();
 }
@@ -243,23 +246,20 @@ function updateBoard() {
             );
             // Check if there's a hazard in the current cell and displaying hazard sprite
             if (cell === 1) {
-                if (decideHazard === 0) {
-                    const hazardRejectLetter = document.createElement("img");
-                    hazardRejectLetter.src = "./images/hazardRejectLetter.png";
-                    hazardRejectLetter.alt = "Rejection Letter";
-                    square.appendChild(hazardRejectLetter);
-                } else if (decideHazard === 1) {
-                    const hazardSpamFilter = document.createElement("img");
-                    hazardSpamFilter.src = "./images/hazardSpamFilter.png";
-                    hazardSpamFilter.alt = "Spam Filter";
-                    square.appendChild(hazardSpamFilter);
-                } else {
-                    const hazardATSBot = document.createElement("img");
-                    hazardATSBot.src = "./images/hazardATSBot.png";
-                    hazardATSBot.alt = "ATS Bot";
-                    square.appendChild(hazardATSBot);
-                }
-                //displaying nothing if no hazard in cell
+                const hazardRejectLetter = document.createElement("img");
+                hazardRejectLetter.src = "./images/hazardRejectLetter.png";
+                hazardRejectLetter.alt = "Rejection Letter";
+                square.appendChild(hazardRejectLetter);
+            } else if (cell === 2) {
+                const hazardSpamFilter = document.createElement("img");
+                hazardSpamFilter.src = "./images/hazardSpamFilter.png";
+                hazardSpamFilter.alt = "Spam Filter";
+                square.appendChild(hazardSpamFilter);
+            } else if (cell === 3) {
+                const hazardATSBot = document.createElement("img");
+                hazardATSBot.src = "./images/hazardATSBot.png";
+                hazardATSBot.alt = "ATS Bot";
+                square.appendChild(hazardATSBot);
             } else {
                 square.textContent = "";
             }
