@@ -33,14 +33,18 @@ button {
 }
 img {
     width: 1500%;
-    height: auto; /* Ensures images scale proportionally */
-    max-width: 1500%; /* Prevent images from overflowing */
+    height: auto; 
+    max-width: 2000%;
 }
-
+.player{
+    width: 2000%;
+    height: auto; 
+    max-width: 2000%;
+}
 .container {
     text-align: center;
-    padding: 5%;
-    width: 90vw;
+    padding: 0%;
+    width: 50vw;
     height: 100vh;
     max-width: 100%;
     max-height: 100%;
@@ -49,21 +53,18 @@ img {
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    position: relative; 
+    
 }
-.top {
+.hud{
     display: flex;
+    justify-content: space-around;
     align-items: center;
-    margin-bottom: 2vh;
+    color: #ee9e26;
+    margin-bottom: 4vh;
+    width: 100%;
+    
 }
-.title {
-    font-size: 2vh;
-    color: rgb(238, 158, 38);
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
 .board {
     border-radius: 10px;
     display: none;
@@ -71,6 +72,11 @@ img {
     width: 60vh;
     position: relative;
     background-color: #00011f;
+    padding-left: 3vw;
+    padding-right: 3vw;
+    
+    
+   
 }
 .board::after,
 .board::before {
@@ -98,10 +104,12 @@ img {
         #003f5b
     );
     animation: 3s spin linear infinite;
+    
 }
 .board::before {
     filter: blur(1.5rem);
     opacity: 0.5;
+    
 }
 .sqr {
     height: 12vh;
@@ -111,21 +119,32 @@ img {
     display: flex;
     justify-content: center;
     align-items: center;
-    /* outline: 1px solid white; */
+    /* outline: 1px solid white;ee9e26 */
     position: relative;
+    
 }
-
 #instructions {
     display: flex;
+    justify-content: center;
+    align-items: center;
     flex-direction: column;
+    color: #ee9e26;
+
+}
+#play {
+    font-size: 1.5rem;
+    width: 5vw;
+    height: 5vh;
+    margin-top: 1vh;
+}
+#live-count , #level-count{
+ font-size: 1rem;
+ font-weight: bold;
+}
+#title-text{
+    font-size: 2.5rem;
 }
 
-#play {
-    margin-top: 50px;
-    font-size: 30px;
-    width: 100px;
-    height: 50px;
-}
 
 @property --angle {
     syntax: "<angle>";
@@ -141,30 +160,16 @@ img {
         --angle: 360deg;
     }
 }
-
-@media (max-width: 1200px) {
-    h1 {
-        font-size: 6vw;
-    }
-    p {
-        font-size: 4vw;
-    }
-}
-
-@media (max-width: 800px) {
-    h1 {
-        font-size: 8vw;
-    }
-    p {
-        font-size: 5vw;
-    }
-}
-
-@media (max-width: 500px) {
-    h1 {
-        font-size: 10vw;
-    }
-    p {
-        font-size: 6vw;
-    }
-}
+@keyframes lose {
+    0% { transform: translate(10px, 10px) rotate(0deg); }
+    10% { transform: translate(-10px, -20px) rotate(-1deg); }
+    20% { transform: translate(-30px, 0px) rotate(1deg); }
+    30% { transform: translate(30px, 20px) rotate(0deg); }
+    40% { transform: translate(10px, -10px) rotate(1deg); }
+    50% { transform: translate(-10px, 20px) rotate(-1deg); }
+    60% { transform: translate(-30px, 10px) rotate(0deg); }
+    70% { transform: translate(30px, 10px) rotate(-1deg); }
+    80% { transform: translate(-10px, -10px) rotate(1deg); }
+    90% { transform: translate(10px, 20px) rotate(0deg); }
+    100% { transform: translate(10px, -2px) rotate(-1deg); }
+  }

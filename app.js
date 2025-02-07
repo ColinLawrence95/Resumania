@@ -6,9 +6,12 @@ let scrollInProgress = false;
 let firstPlaythrough = true;
 let scrollSpeed = 20;
 let difficulty = 50;
-const winSound = new Audio("./sounds/winSound.mp3");
-const loseSound = new Audio("./sounds/loseSound.wav");
+let lives;
+let level;
+let decideHazard;
 const backgroundMusic = new Audio("./sounds/backgroundMusic.mp3");
+const winSound = new Audio("./sounds/winSound.mp3");
+const hitSound = new Audio("./sounds/hitSound.wav");
 const moveSound = new Audio("./sounds/moveSound.wav");
 const playSound = new Audio("./sounds/playSound.wav");
 const playBtnElement = document.querySelector("#play");
@@ -16,7 +19,9 @@ const boardDisplayElement = document.querySelector(".board");
 const instructionsElement = document.querySelector("#instructions");
 const titleElement = document.querySelector("#title-text");
 const playAgainElement = document.querySelector("#restart");
-const uiBtnElement = document.querySelector(".ui-button");
+const livesElement = document.querySelector("#live-count");
+const levelElement = document.querySelector("#level-count");
+const containerElement = document.querySelector(".container");
 const playerSprite = document.createElement("img");
 
 /**
@@ -34,9 +39,10 @@ function init() {
     ];
     isDead = false;
     hasWon = false;
-    //play start position
+    lives = 3;
+    level = 1;
+    containerElement.style.animation = "";
     playerPosition = { row: 6, col: 50 };
-    //making sure music and board wont be regenerated
     if (firstPlaythrough) {
         createBoard();
         playBackgroundMusic();
@@ -51,7 +57,6 @@ function startGame() {
     boardDisplayElement.style.display = "flex";
     playBtnElement.style.display = "none";
     instructionsElement.style.display = "none";
-    uiBtnElement.style.display = "flex";
     init();
     setInterval(scrollHazards, scrollSpeed);
 }
@@ -60,11 +65,12 @@ function startGame() {
  */
 function checkWin() {
     if (playerPosition.row === 0 && !hasWon) {
-        //player wins
         hasWon = true;
-        //play winSOund
-        winSound.currentTime = 0.9;
-        winSound.play();
+        level++;
+        playerPosition = { row: 6, col: 50 };
+        difficulty = difficulty - 2;
+        scrollHazards = scrollSpeed - 1;
+        hasWon = false;
     }
 }
 /**
@@ -83,15 +89,17 @@ function hazardCollision() {
             // Check if there's a hazard in this position
             if (board[playerPosition.row][checkCol] === 1) {
                 //kill player
-                isDead = true;
-                //play death sound
-                loseSound.currentTime = 0;
-                loseSound.volume = 0.1;
-                loseSound.play();
-                //reset to sttarting positon
+                lives--;
+                console.log(lives);
+                playHitSound();
                 playerPosition.row = 6;
                 playerPosition.col = 50;
-                //exit functtion
+                //game over
+                if (lives === 0) {
+                    isDead = true;
+                    containerElement.style.animation =
+                        "1s lose linear infinite";
+                }
                 return;
             }
         }
@@ -129,13 +137,13 @@ function scrollHazards() {
  */
 function movePlayer(event) {
     //locks movement if in final row
-    if (!hasWon) {
+    if (!isDead) {
         switch (event.key) {
             //move left
             case "a":
                 if (playerPosition.col > 10) {
                     playerPosition.col = playerPosition.col - 20;
-                    updateBoard();
+
                     playMoveSound();
                 }
                 break;
@@ -144,7 +152,6 @@ function movePlayer(event) {
                 if (playerPosition.col < 80) {
                     playerPosition.col = playerPosition.col + 20;
                     playMoveSound();
-                    updateBoard();
                 }
                 break;
             //move up
@@ -152,7 +159,6 @@ function movePlayer(event) {
                 if (playerPosition.row <= 6) {
                     playerPosition.row--;
                     playMoveSound();
-                    updateBoard();
                 }
                 break;
             //move down
@@ -160,13 +166,12 @@ function movePlayer(event) {
                 if (playerPosition.row < 6) {
                     playerPosition.row++;
                     playMoveSound();
-                    updateBoard();
                 }
                 break;
         }
     }
     //resets game
-    if (event.key === "r") {
+    if (event.key === "r" && isDead) {
         init();
     }
 }
@@ -185,6 +190,11 @@ function playMoveSound() {
     moveSound.volume = 0.2;
     moveSound.play();
 }
+function playHitSound() {
+    hitSound.currentTime = 0;
+    hitSound.volume = 0.1;
+    hitSound.play();
+}
 /**
  * plays "playSound"
  */
@@ -196,12 +206,18 @@ function playPlaySound() {
 /**
  * Changes title value if player wins
  */
-function displayWin() {
+function displayTitle() {
     if (hasWon) {
         titleElement.textContent = "WINNER!";
-    } else if (!hasWon) {
+    } else if (isDead) {
+        titleElement.textContent = "UNEMPLOYED!";
+    } else {
         titleElement.textContent = "RESUMANIA";
     }
+}
+function updateHud() {
+    livesElement.textContent = `Applications Left: ${lives}`;
+    levelElement.textContent = `Interview #${level}`;
 }
 /**
  * Dynamically creates the board
@@ -227,10 +243,21 @@ function updateBoard() {
             );
             // Check if there's a hazard in the current cell and displaying hazard sprite
             if (cell === 1) {
-                if (rowIndex === 1 || rowIndex === 3 || rowIndex === 5) {
-                    square.textContent = "🚶‍♂️‍➡️";
+                if (decideHazard === 0) {
+                    const hazardRejectLetter = document.createElement("img");
+                    hazardRejectLetter.src = "./images/hazardRejectLetter.png";
+                    hazardRejectLetter.alt = "Rejection Letter";
+                    square.appendChild(hazardRejectLetter);
+                } else if (decideHazard === 1) {
+                    const hazardSpamFilter = document.createElement("img");
+                    hazardSpamFilter.src = "./images/hazardSpamFilter.png";
+                    hazardSpamFilter.alt = "Spam Filter";
+                    square.appendChild(hazardSpamFilter);
                 } else {
-                    square.textContent = "🚗";
+                    const hazardATSBot = document.createElement("img");
+                    hazardATSBot.src = "./images/hazardATSBot.png";
+                    hazardATSBot.alt = "ATS Bot";
+                    square.appendChild(hazardATSBot);
                 }
                 //displaying nothing if no hazard in cell
             } else {
@@ -245,13 +272,15 @@ function updateBoard() {
                 playerSprite.src = "./images/playerSprite.png";
                 playerSprite.alt = "Player";
                 square.appendChild(playerSprite);
+                playerSprite.classList.add("player");
             }
         });
     });
     hazardCollision();
     checkWin();
-    displayWin();
+    updateHud();
+    displayTitle();
 }
 document.addEventListener("keydown", movePlayer);
 document.querySelector("#play").addEventListener("click", startGame);
-document.querySelector("#restart").addEventListener("click", init);
+backgroundMusic.addEventListener("ended", backgroundMusic);

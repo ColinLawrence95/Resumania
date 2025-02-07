@@ -10,26 +10,26 @@
         </style>
         <title>RESUMANIA</title>
     </head>
-
     <body>
         <div class="container">
-            <div class="title">
-                <div class="top">
-                    <button class="ui-button" id="restart">Restart</button>
-                    <h1 id="title-text">RESUMANIA</h1>
-                    <button class="ui-button">Mute Music</button>
-                </div>
-                <div id="instructions">
-                    <h2>INSTRUCTIONS</h2>
-                    <p>
-                       WASD Make it to the end to get hired
-                    </p>
-                </div>
+            <div class="hud">
+                <p id="live-count"></p>
+                <h1 id="title-text">RESUMANIA</h1>
+                <p id="level-count"></p>
+            </div>
+            <div id="instructions">
+                <h2>INSTRUCTIONS</h2>
+                <p>
+                    You are a resume traversing the chaotic and hostile job
+                    market. Dodge spam filters, rejection letters, and ATS bots
+                    while moving from interview to interview to reach the hiring
+                    manager’s inbox. Only the most polished will make it to the
+                    top of the pile. Can you land the job, or will you be lost
+                    in the application black hole?
+                </p>
                 <button id="play">Play</button>
             </div>
-            <section class="board" id="gameBoard">
-                <!-- Dynamic grid will be inserted here -->
-            </section>
+            <section class="board" id="gameBoard"></section>
         </div>
     </body>
 </html>
