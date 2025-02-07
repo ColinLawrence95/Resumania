@@ -23,6 +23,7 @@ let backgroundVolume = 0.02;
 let hitSoundVolume = 0.05;
 let stageEndSoundVolume = 0.05;
 let playSoundVolume = 0.1;
+let winJuiceVolume = 0.05;
 
 //cashed element refernces
 const backgroundMusic = new Audio("./sounds/backgroundMusic.mp3");
@@ -78,6 +79,7 @@ function init() {
     titleElement.style.animation = "";
     containerElement.style.animation = "";
     loseMessageElement.style.display = "none";
+    boardDisplayElement.style.zIndex = "";
 
     //checking if first playtthrough
     if (firstPlaythrough) {
@@ -86,6 +88,9 @@ function init() {
         firstPlaythrough = false;
     }
     playSfx(playSound, playSoundVolume, 0);
+    winSound1.pause();
+    winSound2.pause();
+    winSound3.pause();
 }
 /**
  * Displaying board and hiding Instruction values
@@ -94,6 +99,7 @@ function startGame() {
     boardDisplayElement.style.display = "flex";
     playBtnElement.style.display = "none";
     instructionsElement.style.display = "none";
+
     init();
 }
 /**
@@ -104,24 +110,22 @@ function updateScrollSpeed(currentSpeed) {
     scrollSpeed = currentSpeed - level;
     clearInterval(scrollInterval);
     scrollInterval = setInterval(scrollHazards, scrollSpeed);
-    console.log(scrollSpeed);
 }
-/**
+/**r
  * Checking if player had made it to the end and hasn't already won
  */
 function checkWin() {
-    if (playerPosition.row === 0 && !hasWon) {
+    if (playerPosition.row === 0 && !hasWon && level < 10) {
         level++;
         playerPosition = { row: 6, col: 50 };
         spawnRate = spawnRate - 2;
         playSfx(stageEndSound, stageEndSoundVolume, 0);
         updateScrollSpeed(baseSpeed);
     }
-    if (level === 10) {
+    if (level === 2) {
         hasWon = true;
-        clearInterval(scrollInterval)
-        winJuice(0.5);
-        
+        clearInterval(scrollInterval);
+        winJuice(winJuiceVolume);
     }
 }
 /**
@@ -224,6 +228,8 @@ function movePlayer(event) {
     //resets game
     if (event.key === "r" && isDead) {
         init();
+    } else if (event.key === "r" && hasWon) {
+        init();
     }
 }
 /**
@@ -243,22 +249,25 @@ function playSfx(sound, volume, time) {
     sound.volume = volume;
     sound.play();
 }
-function winJuice(volume){
- winSound1.volume = volume;
- winSound2.volume = volume;
- winSound3.volume = volume;
-
- winSound1.loop = true;
- winSound2.loop = true;
- winSound3.loop = true;
-
- winSound1.play();
- winSound2.play();
- winSound3.play();
+function winJuice(volume) {
+    winSound1.volume = volume;
+    winSound2.volume = volume;
+    winSound3.volume = volume;
+    winSound1.currentTime = 0;
+    winSound2.currentTime = 0;
+    winSound3.currentTime = 0;
+    winSound1.loop = true;
+    winSound2.loop = true;
+    winSound3.loop = true;
+    winSound1.play();
+    winSound2.play();
+    winSound3.play();
+    boardDisplayElement.style.zIndex = "-1";
+    containerElement.style.animation = "1s lose linear infinite";
+    titleElement.style.animation = "2s flashTitle linear infinite";
 }
-function loseJuice()
-{
-    playSfx(loseSound1, 0.5, 0)
+function loseJuice() {
+    playSfx(loseSound1, 0.5, 0);
     containerElement.style.animation = "1s lose linear infinite";
     loseMessageElement.style.display = "flex";
     titleElement.style.animation = "2s flashTitle linear infinite";
@@ -314,17 +323,17 @@ function updateBoard() {
                 `h${rowIndex * 100 + colIndex}`
             );
             // Check if there's a hazard in the current cell and displaying hazard sprite
-            if (cell === 1) {
+            if (cell === 1 && !hasWon) {
                 const hazardRejectLetter = document.createElement("img");
                 hazardRejectLetter.src = "./images/hazardRejectLetter.png";
                 hazardRejectLetter.alt = "Rejection Letter";
                 square.appendChild(hazardRejectLetter);
-            } else if (cell === 2) {
+            } else if (cell === 2 && !hasWon) {
                 const hazardSpamFilter = document.createElement("img");
                 hazardSpamFilter.src = "./images/hazardSpamFilter.png";
                 hazardSpamFilter.alt = "Spam Filter";
                 square.appendChild(hazardSpamFilter);
-            } else if (cell === 3) {
+            } else if (cell === 3 && !hasWon) {
                 const hazardATSBot = document.createElement("img");
                 hazardATSBot.src = "./images/hazardATSBot.png";
                 hazardATSBot.alt = "ATS Bot";

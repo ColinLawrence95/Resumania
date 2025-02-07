@@ -40,7 +40,7 @@ h2 {
     height: 100vh;
     overflow: hidden;
     display: flex;
-    justify-content: top;
+    justify-content: centerr;
     align-items: center;
     flex-direction: column;
     position: relative;
@@ -134,12 +134,16 @@ h2 {
 #live-count {
     font-size: 16px;
     font-weight: bold;
-    padding-left: 20px;
+    padding-left: 40px;
+    display: flex;
+    justify-content: center;
 }
 #level-count {
     font-size: 20px;
     font-weight: bold;
     padding-right: 45px;
+    display: flex;
+    justify-content: center;
 }
 #lose-message {
     position: absolute;
@@ -235,6 +239,17 @@ h2 {
         color: red;
     }
 }
+@keyframes flashWin{
+    0% {
+        color: green
+    }
+    50% {
+        color: black
+    }
+    100% {
+        color: green
+    }
+}
 
 @media (max-width: 1200px) {
     #title-text {
@@ -252,9 +267,9 @@ h2 {
 }
 @media (max-height: 950px) {
     #live-count {
-        padding-left: 0px;
+        padding-right: 70px;
     }
     #level-count {
-        padding-right: 35px;
+        padding-left: 75px;
     }
 }
