@@ -69,7 +69,6 @@ function checkWin() {
         level++;
         playerPosition = { row: 6, col: 50 };
         difficulty = difficulty - 2;
-        scrollHazards = scrollSpeed - 1;
         hasWon = false;
     }
 }
