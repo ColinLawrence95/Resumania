@@ -1,16 +1,33 @@
-let board = [];
+//hazard scroll varibles
+let scrollInProgress = false;
+let scrollInterval;
+let baseSpeed;
+let scrollSpeed;
+let loseScreenSpeed = 1;
+let spawnRate;
+
+//player varibles
 let playerPosition;
 let isDead;
 let hasWon;
-let scrollInProgress = false;
-let firstPlaythrough = true;
-let scrollSpeed = 20;
-let difficulty = 60;
 let lives;
+let firstPlaythrough = true;
+
+//level varibles
+let board;
 let level;
-let decideHazard;
+
+//sounds
+let moveSoundVolume = 0.1;
+let backgroundVolume = 0.02;
+let hitSoundVolume = 0.05;
+let stageEndSoundVolume = 0.05;
+let playSoundVolume = 0.1;
+
+//cashed element refernces
 const backgroundMusic = new Audio("./sounds/backgroundMusic.mp3");
 const winSound = new Audio("./sounds/winSound.mp3");
+const stageEndSound = new Audio("./sounds/stageEndSound.wav");
 const hitSound = new Audio("./sounds/hitSound.wav");
 const moveSound = new Audio("./sounds/moveSound.wav");
 const playSound = new Audio("./sounds/playSound.wav");
@@ -23,11 +40,17 @@ const livesElement = document.querySelector("#live-count");
 const levelElement = document.querySelector("#level-count");
 const containerElement = document.querySelector(".container");
 const playerSprite = document.createElement("img");
+const loseMessageElement = document.querySelector("#lose-message");
+
+//event listeners
+document.addEventListener("keydown", movePlayer);
+document.querySelector("#play").addEventListener("click", startGame);
 
 /**
  * Initalizing game values tto there starting position
  */
 function init() {
+    //creating values for empty board
     board = [
         new Array(100).fill(0),
         new Array(100).fill(0),
@@ -37,18 +60,29 @@ function init() {
         new Array(100).fill(0),
         new Array(100).fill(0),
     ];
+    //player variable init
     isDead = false;
     hasWon = false;
     lives = 3;
     level = 1;
-    containerElement.style.animation = "";
     playerPosition = { row: 6, col: 50 };
+    //hazard varible init
+    baseSpeed = 21;
+    spawnRate = 70;
+    updateScrollSpeed(baseSpeed);
+
+    //display varible init
+    titleElement.style.animation = "";
+    containerElement.style.animation = "";
+    loseMessageElement.style.display = "none";
+
+    //checking if first playtthrough
     if (firstPlaythrough) {
         createBoard();
-        playBackgroundMusic();
+        playBackgroundMusic(backgroundVolume);
         firstPlaythrough = false;
     }
-    playPlaySound();
+    playSfx(playSound, playSoundVolume);
 }
 /**
  * Displaying board and hiding Instruction values
@@ -58,25 +92,37 @@ function startGame() {
     playBtnElement.style.display = "none";
     instructionsElement.style.display = "none";
     init();
-    setInterval(scrollHazards, scrollSpeed);
+}
+/**
+ * updates the speed of the hazards makes it faster the higher level you are on
+ * @param currentSpeed how fast you want the hazards to scroll lower is faster
+ */
+function updateScrollSpeed(currentSpeed) {
+    scrollSpeed = currentSpeed - level;
+    clearInterval(scrollInterval);
+    scrollInterval = setInterval(scrollHazards, scrollSpeed);
+    console.log(scrollSpeed);
 }
 /**
  * Checking if player had made it to the end and hasn't already won
  */
 function checkWin() {
     if (playerPosition.row === 0 && !hasWon) {
-        hasWon = true;
         level++;
         playerPosition = { row: 6, col: 50 };
-        difficulty = difficulty - 2;
-        hasWon = false;
+        spawnRate = spawnRate - 2;
+        playSfx(stageEndSound, stageEndSoundVolume);
+        updateScrollSpeed(baseSpeed);
+    }
+    if (level === 10) {
+        hasWon = true;
     }
 }
 /**
  * Checking if a hazard hits the player
  */
 function hazardCollision() {
-    // Check if there’s a hazard within 5 horizontal grid spaces
+    // Check if there’s a hazard within 7 horizontal grid spaces
     for (let offset = -7; offset <= 7; offset++) {
         if (offset === 0) continue;
 
@@ -93,15 +139,12 @@ function hazardCollision() {
             ) {
                 //kill player
                 lives--;
-                console.log(lives);
-                playHitSound();
-                playerPosition.row = 6;
-                playerPosition.col = 50;
+                playSfx(hitSound, hitSoundVolume);
+                playerPosition = { row: 6, col: 50 };
                 //game over
                 if (lives === 0) {
                     isDead = true;
-                    containerElement.style.animation =
-                        "1s lose linear infinite";
+                    gameOverAnimation();
                 }
                 return;
             }
@@ -119,7 +162,7 @@ function scrollHazards() {
         // Remove the last element from the row
         row.pop();
         //1 in diffiulty's value chance to be a hazard
-        row.unshift(Math.floor(Math.random() * difficulty * 3));
+        row.unshift(Math.floor(Math.random() * spawnRate * 3));
     });
 
     // For hazards moving right (rows 2, 4)
@@ -129,45 +172,45 @@ function scrollHazards() {
         // Remove the first element from the row
         row.shift();
         //1 in diffiulty's value chance to be a hazard
-        row.push(Math.floor(Math.random() * difficulty * 3));
+        row.push(Math.floor(Math.random() * spawnRate * 3));
     });
     updateBoard();
 }
 /**
  * Controls player movement and limits movement to existt within the board.
- * @param {keyDown} event
+ * @param event looking for a move key to be pressed
  */
 function movePlayer(event) {
     //locks movement if in final row
-    if (!isDead) {
+    if (!isDead && !hasWon) {
         switch (event.key) {
             //move left
             case "a":
                 if (playerPosition.col > 10) {
                     playerPosition.col = playerPosition.col - 20;
 
-                    playMoveSound();
+                    playSfx(moveSound, moveSoundVolume);
                 }
                 break;
             //move right
             case "d":
                 if (playerPosition.col < 80) {
                     playerPosition.col = playerPosition.col + 20;
-                    playMoveSound();
+                    playSfx(moveSound, moveSoundVolume);
                 }
                 break;
             //move up
             case "w":
                 if (playerPosition.row <= 6) {
                     playerPosition.row--;
-                    playMoveSound();
+                    playSfx(moveSound, moveSoundVolume);
                 }
                 break;
             //move down
             case "s":
                 if (playerPosition.row < 6) {
                     playerPosition.row++;
-                    playMoveSound();
+                    playSfx(moveSound, moveSoundVolume);
                 }
                 break;
         }
@@ -179,31 +222,29 @@ function movePlayer(event) {
 }
 /**
  * Plays background music for game
+ * @param volume How loud you want the music
  */
-function playBackgroundMusic() {
-    backgroundMusic.volume = 0.02;
+function playBackgroundMusic(volume) {
+    backgroundMusic.volume = volume;
+    backgroundMusic.loop = true;
     backgroundMusic.play();
 }
 /**
  * plays sound on player move
  */
-function playMoveSound() {
-    moveSound.currentTime = 0;
-    moveSound.volume = 0.2;
-    moveSound.play();
-}
-function playHitSound() {
-    hitSound.currentTime = 0;
-    hitSound.volume = 0.1;
-    hitSound.play();
+function playSfx(sound, volume) {
+    sound.currentTime = 0;
+    sound.volume = volume;
+    sound.play();
 }
 /**
- * plays "playSound"
+ * Shakes screen and flashs title and makes hazards scroll real fast on game over
  */
-function playPlaySound() {
-    playSound.currentTime = 0;
-    playSound.volume = 0.2;
-    playSound.play();
+function gameOverAnimation() {
+    containerElement.style.animation = "1s lose linear infinite";
+    loseMessageElement.style.display = "flex";
+    titleElement.style.animation = "2s flashTitle linear infinite";
+    updateScrollSpeed(1);
 }
 /**
  * Changes title value if player wins
@@ -217,9 +258,17 @@ function displayTitle() {
         titleElement.textContent = "RESUMANIA";
     }
 }
+/**
+ * Updatets the lives and level count
+ */
 function updateHud() {
     livesElement.textContent = `Applications Left: ${lives}`;
     levelElement.textContent = `Interview #${level}`;
+    if (lives === 1) {
+        livesElement.style.animation = "2s flashLives linear infinite";
+    } else {
+        livesElement.style.animation = "";
+    }
 }
 /**
  * Dynamically creates the board
@@ -280,6 +329,3 @@ function updateBoard() {
     updateHud();
     displayTitle();
 }
-document.addEventListener("keydown", movePlayer);
-document.querySelector("#play").addEventListener("click", startGame);
-backgroundMusic.addEventListener("ended", backgroundMusic);
