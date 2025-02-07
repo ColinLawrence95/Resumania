@@ -122,7 +122,7 @@ function checkWin() {
         playSfx(stageEndSound, stageEndSoundVolume, 0);
         updateScrollSpeed(baseSpeed);
     }
-    if (level === 2) {
+    if (level === 15) {
         hasWon = true;
         clearInterval(scrollInterval);
         winJuice(winJuiceVolume);
