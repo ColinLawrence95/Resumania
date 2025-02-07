@@ -26,7 +26,10 @@ let playSoundVolume = 0.1;
 
 //cashed element refernces
 const backgroundMusic = new Audio("./sounds/backgroundMusic.mp3");
-const winSound = new Audio("./sounds/winSound.mp3");
+const winSound1 = new Audio("./sounds/winSound1.mp3");
+const winSound2 = new Audio("./sounds/winSound2.mp3");
+const winSound3 = new Audio("./sounds/winSound3.mp3");
+const loseSound1 = new Audio("./sounds/loseSound1.wav");
 const stageEndSound = new Audio("./sounds/stageEndSound.wav");
 const hitSound = new Audio("./sounds/hitSound.wav");
 const moveSound = new Audio("./sounds/moveSound.wav");
@@ -82,7 +85,7 @@ function init() {
         playBackgroundMusic(backgroundVolume);
         firstPlaythrough = false;
     }
-    playSfx(playSound, playSoundVolume);
+    playSfx(playSound, playSoundVolume, 0);
 }
 /**
  * Displaying board and hiding Instruction values
@@ -111,11 +114,14 @@ function checkWin() {
         level++;
         playerPosition = { row: 6, col: 50 };
         spawnRate = spawnRate - 2;
-        playSfx(stageEndSound, stageEndSoundVolume);
+        playSfx(stageEndSound, stageEndSoundVolume, 0);
         updateScrollSpeed(baseSpeed);
     }
     if (level === 10) {
         hasWon = true;
+        clearInterval(scrollInterval)
+        winJuice(0.5);
+        
     }
 }
 /**
@@ -139,12 +145,12 @@ function hazardCollision() {
             ) {
                 //kill player
                 lives--;
-                playSfx(hitSound, hitSoundVolume);
+                playSfx(hitSound, hitSoundVolume, 0);
                 playerPosition = { row: 6, col: 50 };
                 //game over
                 if (lives === 0) {
                     isDead = true;
-                    gameOverAnimation();
+                    loseJuice();
                 }
                 return;
             }
@@ -189,28 +195,28 @@ function movePlayer(event) {
                 if (playerPosition.col > 10) {
                     playerPosition.col = playerPosition.col - 20;
 
-                    playSfx(moveSound, moveSoundVolume);
+                    playSfx(moveSound, moveSoundVolume, 0);
                 }
                 break;
             //move right
             case "d":
                 if (playerPosition.col < 80) {
                     playerPosition.col = playerPosition.col + 20;
-                    playSfx(moveSound, moveSoundVolume);
+                    playSfx(moveSound, moveSoundVolume, 0);
                 }
                 break;
             //move up
             case "w":
                 if (playerPosition.row <= 6) {
                     playerPosition.row--;
-                    playSfx(moveSound, moveSoundVolume);
+                    playSfx(moveSound, moveSoundVolume, 0);
                 }
                 break;
             //move down
             case "s":
                 if (playerPosition.row < 6) {
                     playerPosition.row++;
-                    playSfx(moveSound, moveSoundVolume);
+                    playSfx(moveSound, moveSoundVolume, 0);
                 }
                 break;
         }
@@ -232,20 +238,35 @@ function playBackgroundMusic(volume) {
 /**
  * plays sound on player move
  */
-function playSfx(sound, volume) {
-    sound.currentTime = 0;
+function playSfx(sound, volume, time) {
+    sound.currentTime = time;
     sound.volume = volume;
     sound.play();
 }
-/**
- * Shakes screen and flashs title and makes hazards scroll real fast on game over
- */
-function gameOverAnimation() {
+function winJuice(volume){
+ winSound1.volume = volume;
+ winSound2.volume = volume;
+ winSound3.volume = volume;
+
+ winSound1.loop = true;
+ winSound2.loop = true;
+ winSound3.loop = true;
+
+ winSound1.play();
+ winSound2.play();
+ winSound3.play();
+}
+function loseJuice()
+{
+    playSfx(loseSound1, 0.5, 0)
     containerElement.style.animation = "1s lose linear infinite";
     loseMessageElement.style.display = "flex";
     titleElement.style.animation = "2s flashTitle linear infinite";
     updateScrollSpeed(1);
 }
+/**
+ * Shakes screen and flashs title and makes hazards scroll real fast on game over
+
 /**
  * Changes title value if player wins
  */

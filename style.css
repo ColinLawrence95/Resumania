@@ -16,22 +16,23 @@ body {
 }
 button {
     border-radius: 10px;
+    font-family: "Nova Square", system-ui;
 }
 p {
     max-width: 30%;
 }
 img {
-    width: 1500%;
+    width: 70px;
     height: auto;
-    max-width: 2000%;
+    max-width: 100px;
 }
 h2 {
     margin-top: 20px;
 }
 .player {
-    width: 2000%;
+    width: 100px;
     height: auto;
-    max-width: 2000%;
+    max-width: 150px;
 }
 .container {
     text-align: center;
@@ -125,9 +126,10 @@ h2 {
 #play {
     background-color: #67c8ee;
     font-size: 30px;
-    width: 100px;
-    height: 40px;
+    width: 250px;
+    height: 50px;
     margin-top: 20px;
+    animation: 5s flashTitle linear infinite;
 }
 #live-count {
     font-size: 16px;
