@@ -23,7 +23,7 @@ let backgroundVolume = 0.02;
 let hitSoundVolume = 0.05;
 let stageEndSoundVolume = 0.05;
 let playSoundVolume = 0.1;
-let winJuiceVolume = 0.05;
+let winJuiceVolume = 0.2;
 
 //cashed element refernces
 const backgroundMusic = new Audio("./sounds/backgroundMusic.mp3");
@@ -281,7 +281,7 @@ function loseJuice() {
  */
 function displayTitle() {
     if (hasWon) {
-        titleElement.textContent = "WINNER!";
+        titleElement.textContent = "HIRED!";
     } else if (isDead) {
         titleElement.textContent = "UNEMPLOYED!";
     } else {

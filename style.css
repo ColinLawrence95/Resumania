@@ -40,7 +40,7 @@ h2 {
     height: 100vh;
     overflow: hidden;
     display: flex;
-    justify-content: centerr;
+    justify-content: center;
     align-items: center;
     flex-direction: column;
     position: relative;
@@ -239,15 +239,15 @@ h2 {
         color: red;
     }
 }
-@keyframes flashWin{
+@keyframes flashWin {
     0% {
-        color: green
+        color: green;
     }
     50% {
-        color: black
+        color: black;
     }
     100% {
-        color: green
+        color: green;
     }
 }
 
