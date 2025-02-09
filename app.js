@@ -19,7 +19,7 @@ let level;
 
 //sounds
 let moveSoundVolume = 0.5;
-let backgroundVolume = 0.2;
+let backgroundVolume = 0.02;
 let hitSoundVolume = 0.05;
 let stageEndSoundVolume = 0.05;
 let playSoundVolume = 0.5;
