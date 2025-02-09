@@ -18,12 +18,12 @@ let board;
 let level;
 
 //sounds
-let moveSoundVolume = 0.1;
-let backgroundVolume = 0.02;
+let moveSoundVolume = 0.5;
+let backgroundVolume = 0.2;
 let hitSoundVolume = 0.05;
 let stageEndSoundVolume = 0.05;
-let playSoundVolume = 0.1;
-let winJuiceVolume = 0.2;
+let playSoundVolume = 0.5;
+let winJuiceVolume = 0.5;
 
 //cashed element refernces
 const backgroundMusic = new Audio("./sounds/backgroundMusic.mp3");
@@ -37,7 +37,7 @@ const moveSound = new Audio("./sounds/moveSound.wav");
 const playSound = new Audio("./sounds/playSound.wav");
 const playBtnElement = document.querySelector("#play");
 const boardDisplayElement = document.querySelector(".board");
-const instructionsElement = document.querySelector("#instructions");
+const instructionsElement = document.querySelector(".instructions");
 const titleElement = document.querySelector("#title-text");
 const playAgainElement = document.querySelector("#restart");
 const livesElement = document.querySelector("#live-count");
@@ -45,10 +45,16 @@ const levelElement = document.querySelector("#level-count");
 const containerElement = document.querySelector(".container");
 const playerSprite = document.createElement("img");
 const loseMessageElement = document.querySelector("#lose-message");
-
+const bodyDisplayElement = document.querySelector("body");
+const volumeSliderBGElement = document.querySelector("#volume-sliderBG");
+const volumeSliderSFXElement = document.querySelector("#volume-sliderSFX");
 //event listeners
 document.addEventListener("keydown", movePlayer);
 document.querySelector("#play").addEventListener("click", startGame);
+volumeSliderBGElement.addEventListener("input", (event) => {
+    const volume = parseFloat(event.target.value);
+    backgroundMusic.volume = volume;
+});
 
 /**
  * Initalizing game values tto there starting position
@@ -84,7 +90,7 @@ function init() {
     //checking if first playtthrough
     if (firstPlaythrough) {
         createBoard();
-        playBackgroundMusic(backgroundVolume);
+        playBackgroundMusic();
         firstPlaythrough = false;
     }
     playSfx(playSound, playSoundVolume, 0);
@@ -96,10 +102,8 @@ function init() {
  * Displaying board and hiding Instruction values
  */
 function startGame() {
-    boardDisplayElement.style.display = "flex";
-    playBtnElement.style.display = "none";
     instructionsElement.style.display = "none";
-
+    containerElement.style.display = "flex";
     init();
 }
 /**
@@ -119,13 +123,13 @@ function checkWin() {
         level++;
         playerPosition = { row: 6, col: 50 };
         spawnRate = spawnRate - 2;
-        playSfx(stageEndSound, stageEndSoundVolume, 0);
+        playSfx(stageEndSound, 0);
         updateScrollSpeed(baseSpeed);
     }
-    if (level === 15) {
+    if (level === 10) {
         hasWon = true;
         clearInterval(scrollInterval);
-        winJuice(winJuiceVolume);
+        winJuice();
     }
 }
 /**
@@ -234,25 +238,24 @@ function movePlayer(event) {
 }
 /**
  * Plays background music for game
- * @param volume How loud you want the music
  */
-function playBackgroundMusic(volume) {
-    backgroundMusic.volume = volume;
+function playBackgroundMusic() {
+    backgroundMusic.volume = parseFloat(volumeSliderBGElement.value);
     backgroundMusic.loop = true;
     backgroundMusic.play();
 }
 /**
  * plays sound on player move
  */
-function playSfx(sound, volume, time) {
+function playSfx(sound, time) {
     sound.currentTime = time;
-    sound.volume = volume;
+    sound.volume = parseFloat(volumeSliderSFXElement.value);
     sound.play();
 }
-function winJuice(volume) {
-    winSound1.volume = volume;
-    winSound2.volume = volume;
-    winSound3.volume = volume;
+function winJuice() {
+    winSound1.volume = parseFloat(volumeSliderSFXElement.value);
+    winSound2.volume = parseFloat(volumeSliderSFXElement.value);
+    winSound3.volume = parseFloat(volumeSliderSFXElement.value);
     winSound1.currentTime = 0;
     winSound2.currentTime = 0;
     winSound3.currentTime = 0;
@@ -267,7 +270,7 @@ function winJuice(volume) {
     titleElement.style.animation = "2s flashTitle linear infinite";
 }
 function loseJuice() {
-    playSfx(loseSound1, 0.5, 0);
+    playSfx(loseSound1, 0);
     containerElement.style.animation = "1s lose linear infinite";
     loseMessageElement.style.display = "flex";
     titleElement.style.animation = "2s flashTitle linear infinite";
@@ -277,7 +280,7 @@ function loseJuice() {
  * Shakes screen and flashs title and makes hazards scroll real fast on game over
 
 /**
- * Changes title value if player wins
+ * Changes title value if player winsww
  */
 function displayTitle() {
     if (hasWon) {
