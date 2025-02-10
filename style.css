@@ -29,13 +29,6 @@ img {
 h2 {
     margin-top: 20px;
 }
-.sliders{
-    display: flex;
-    justify-content: space-between;
-    width: 30%;
-    padding-top: 20px;
-    color: #ee9e26;
-}
 .instructions{
     color: #ee9e26;
     display: flex;
@@ -44,10 +37,13 @@ h2 {
     margin-left:500px;
     min-width: 800px
 }
-.player {
-    width: 100px;
-    height: auto;
-    max-width: 150px;
+#play {
+    background-color: #67c8ee;
+    font-size: 30px;
+    width: 250px;
+    height: 50px;
+    margin-top: 20px;
+    animation: 5s flashTitle linear infinite;
 }
 .container {
     text-align: center;
@@ -71,6 +67,25 @@ h2 {
     max-width: 60vh;
     /* background-color: white; */
     position: relative;
+}
+#live-count {
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+}
+#title-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    font-size: 35px;
+}
+#level-count {
+    font-size: 20px;
+    font-weight: bold;
+    padding-right: 35px;
+    display: flex;
+    justify-content: center;
 }
 .board {
     border-radius: 10px;
@@ -125,35 +140,7 @@ h2 {
     /* outline: 1px solid white; */
     position: relative;
 }
-#title-text {
-    position: absolute;
-    width: 100%;
-    text-align: center;
-    font-size: 35px;
-}
 
-
-#play {
-    background-color: #67c8ee;
-    font-size: 30px;
-    width: 250px;
-    height: 50px;
-    margin-top: 20px;
-    animation: 5s flashTitle linear infinite;
-}
-#live-count {
-    font-size: 16px;
-    font-weight: bold;
-    display: flex;
-    justify-content: center;
-}
-#level-count {
-    font-size: 20px;
-    font-weight: bold;
-    padding-right: 35px;
-    display: flex;
-    justify-content: center;
-}
 #lose-message {
     position: absolute;
     top: 45%;
@@ -163,7 +150,19 @@ h2 {
     display: none;
     justify-content: center;
 }
+.player {
+    width: 100px;
+    height: auto;
+    max-width: 150px;
+}
 
+.sliders{
+    display: flex;
+    justify-content: space-between;
+    width: 30%;
+    padding-top: 20px;
+    color: #ee9e26;
+}
 @property --angle {
     syntax: "<angle>";
     initial-value: 0deg;

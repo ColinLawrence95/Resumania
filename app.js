@@ -1,10 +1,16 @@
-//hazard scroll varibles
+//hazard varibles
 let scrollInProgress = false;
 let scrollInterval;
 let baseSpeed;
 let scrollSpeed;
 let loseScreenSpeed = 1;
 let spawnRate;
+let atsBotId = 3;
+let spamFilterId = 2;
+let rejectionLetterId = 1;
+let oddRow = [1,3,5];
+let evenRow = [2,4];
+let totalUniqueHazards = 3;
 
 //player varibles
 let playerPosition;
@@ -12,11 +18,14 @@ let isDead;
 let hasWon;
 let lives;
 let firstPlaythrough = true;
+let spawnLocation = {row: 6, col: 50};
 
 //level varibles
 let board;
 let level;
-
+let boardHeight = 7
+let boardWidth = 100;
+let totalLevels = 10;
 //sounds
 let moveSoundVolume = 0.5;
 let backgroundVolume = 0.02;
@@ -39,7 +48,6 @@ const playBtnElement = document.querySelector("#play");
 const boardDisplayElement = document.querySelector(".board");
 const instructionsElement = document.querySelector(".instructions");
 const titleElement = document.querySelector("#title-text");
-const playAgainElement = document.querySelector("#restart");
 const livesElement = document.querySelector("#live-count");
 const levelElement = document.querySelector("#level-count");
 const containerElement = document.querySelector(".container");
@@ -57,10 +65,17 @@ volumeSliderBGElement.addEventListener("input", (event) => {
 });
 
 /**
- * Initalizing game values tto there starting position
+ * Displaying board and hiding Instruction values
+ */
+function startGame() {
+    instructionsElement.style.display = "none";
+    containerElement.style.display = "flex";
+    init();
+}
+/**
+ * Initalizing game values to there starting position
  */
 function init() {
-    //creating values for empty board
     board = [
         new Array(100).fill(0),
         new Array(100).fill(0),
@@ -70,18 +85,14 @@ function init() {
         new Array(100).fill(0),
         new Array(100).fill(0),
     ];
-    //player variable init
     isDead = false;
     hasWon = false;
     lives = 3;
     level = 1;
     playerPosition = { row: 6, col: 50 };
-    //hazard varible init
     baseSpeed = 21;
     spawnRate = 70;
     updateScrollSpeed(baseSpeed);
-
-    //display varible init
     titleElement.style.animation = "";
     containerElement.style.animation = "";
     loseMessageElement.style.display = "none";
@@ -99,38 +110,88 @@ function init() {
     winSound3.pause();
 }
 /**
- * Displaying board and hiding Instruction values
+ * Dynamically creates the board
  */
-function startGame() {
-    instructionsElement.style.display = "none";
-    containerElement.style.display = "flex";
-    init();
+function createBoard() {
+    for (let rowIndex = 0; rowIndex < boardHeight; rowIndex++) {
+        for (let colIndex = 0; colIndex < boardWidth; colIndex++) {
+            const square = document.createElement("div");
+            square.classList.add("sqr");
+            square.id = `h${rowIndex * boardWidth + colIndex}`;
+            boardDisplayElement.appendChild(square);
+        }
+    }
 }
 /**
- * updates the speed of the hazards makes it faster the higher level you are on
- * @param currentSpeed how fast you want the hazards to scroll lower is faster
+ * Displaying content on the board in the grid squares
  */
-function updateScrollSpeed(currentSpeed) {
-    scrollSpeed = currentSpeed - level;
-    clearInterval(scrollInterval);
-    scrollInterval = setInterval(scrollHazards, scrollSpeed);
+function updateBoard() {
+    board.forEach((row, rowIndex) => {
+        row.forEach((cell, colIndex) => {
+            const square = document.getElementById(
+                `h${rowIndex * boardWidth + colIndex}`
+            );
+            // Check if there's a hazard in the current cell and displaying hazard sprite
+            if (cell === rejectionLetterId && !hasWon) {
+                const hazardRejectLetter = document.createElement("img");
+                hazardRejectLetter.src = "./images/hazardRejectLetter.png";
+                hazardRejectLetter.alt = "Rejection Letter";
+                square.appendChild(hazardRejectLetter);
+            } else if (cell === spamFilterId && !hasWon) {
+                const hazardSpamFilter = document.createElement("img");
+                hazardSpamFilter.src = "./images/hazardSpamFilter.png";
+                hazardSpamFilter.alt = "Spam Filter";
+                square.appendChild(hazardSpamFilter);
+            } else if (cell === atsBotId && !hasWon) {
+                const hazardATSBot = document.createElement("img");
+                hazardATSBot.src = "./images/hazardATSBot.png";
+                hazardATSBot.alt = "ATS Bot";
+                square.appendChild(hazardATSBot);
+            } else {
+                square.textContent = "";
+            }
+            // Check if the player is in the current cell
+            if (
+                playerPosition.row === rowIndex &&
+                playerPosition.col === colIndex
+            ) {
+                //if it is change the content to player sprite
+                playerSprite.src = "./images/playerSprite.png";
+                playerSprite.alt = "Player";
+                square.appendChild(playerSprite);
+                playerSprite.classList.add("player");
+            }
+        });
+    });
+    hazardCollision();
+    checkWin();
+    updateHud();
+    displayTitle();
 }
-/**r
- * Checking if player had made it to the end and hasn't already won
+/**
+ * pushes shifts unshifts and pops values into the hazard rows in alternating directions
  */
-function checkWin() {
-    if (playerPosition.row === 0 && !hasWon && level < 10) {
-        level++;
-        playerPosition = { row: 6, col: 50 };
-        spawnRate = spawnRate - 2;
-        playSfx(stageEndSound, 0);
-        updateScrollSpeed(baseSpeed);
-    }
-    if (level === 10) {
-        hasWon = true;
-        clearInterval(scrollInterval);
-        winJuice();
-    }
+function scrollHazards() {
+    // For hazards moving left (rows 1, 3, 5)
+    oddRow.forEach((rowIndex) => {
+        // Get the row based on rowIndex
+        let row = board[rowIndex];
+        // Remove the last element from the row
+        row.pop();
+        //1 in diffiulty's value chance to be a hazard
+        row.unshift(Math.floor(Math.random() * spawnRate * totalUniqueHazards));
+    });
+
+    // For hazards moving right (rows 2, 4)
+    evenRow.forEach((rowIndex) => {
+        // Get the row based on rowIndex
+        let row = board[rowIndex];
+        // Remove the first element from the row
+        row.shift();
+        //1 in diffiulty's value chance to be a hazard
+        row.push(Math.floor(Math.random() * spawnRate * totalUniqueHazards));
+    });
+    updateBoard();
 }
 /**
  * Checking if a hazard hits the player
@@ -147,9 +208,9 @@ function hazardCollision() {
         if (checkCol >= 0 && checkCol < board[0].length) {
             // Check if there's a hazard in this position
             if (
-                board[playerPosition.row][checkCol] === 1 ||
-                board[playerPosition.row][checkCol] === 2 ||
-                board[playerPosition.row][checkCol] === 3
+                board[playerPosition.row][checkCol] === rejectionLetterId ||
+                board[playerPosition.row][checkCol] === spamFilterId ||
+                board[playerPosition.row][checkCol] === atsBotId
             ) {
                 //kill player
                 lives--;
@@ -166,29 +227,30 @@ function hazardCollision() {
     }
 }
 /**
- * pushes shifts unshifts and pops values into the hazard rows in alternating directions
+ * updates the speed of the hazards makes it faster the higher level you are on
+ * @param currentSpeed how fast you want the hazards to scroll lower is faster
  */
-function scrollHazards() {
-    // For hazards moving left (rows 1, 3, 5)
-    [1, 3, 5].forEach((rowIndex) => {
-        // Get the row based on rowIndex
-        let row = board[rowIndex];
-        // Remove the last element from the row
-        row.pop();
-        //1 in diffiulty's value chance to be a hazard
-        row.unshift(Math.floor(Math.random() * spawnRate * 3));
-    });
-
-    // For hazards moving right (rows 2, 4)
-    [2, 4].forEach((rowIndex) => {
-        // Get the row based on rowIndex
-        let row = board[rowIndex];
-        // Remove the first element from the row
-        row.shift();
-        //1 in diffiulty's value chance to be a hazard
-        row.push(Math.floor(Math.random() * spawnRate * 3));
-    });
-    updateBoard();
+function updateScrollSpeed(currentSpeed) {
+    scrollSpeed = currentSpeed - level;
+    clearInterval(scrollInterval);
+    scrollInterval = setInterval(scrollHazards, scrollSpeed);
+}
+/**r
+ * Checking if player had made it to the end and hasn't already won
+ */
+function checkWin() {
+    if (playerPosition.row === 0 && !hasWon && level < totalLevels) {
+        level++;
+        playerPosition = { row: 6, col: 50 };
+        spawnRate = spawnRate - 2;
+        playSfx(stageEndSound, 0);
+        updateScrollSpeed(baseSpeed);
+    }
+    if (level === totalLevels) {
+        hasWon = true;
+        clearInterval(scrollInterval);
+        winJuice();
+    }
 }
 /**
  * Controls player movement and limits movement to existt within the board.
@@ -245,13 +307,16 @@ function playBackgroundMusic() {
     backgroundMusic.play();
 }
 /**
- * plays sound on player move
+ * plays sfx
  */
 function playSfx(sound, time) {
     sound.currentTime = time;
     sound.volume = parseFloat(volumeSliderSFXElement.value);
     sound.play();
 }
+/**
+ * Handles sound and animation for when player wins
+ */
 function winJuice() {
     winSound1.volume = parseFloat(volumeSliderSFXElement.value);
     winSound2.volume = parseFloat(volumeSliderSFXElement.value);
@@ -268,6 +333,11 @@ function winJuice() {
     boardDisplayElement.style.zIndex = "-1";
     containerElement.style.animation = "1s lose linear infinite";
     titleElement.style.animation = "2s flashTitle linear infinite";
+
+
+/**
+ * Shakes screen and flashs title and makes hazards scroll real fast on game over
+ */
 }
 function loseJuice() {
     playSfx(loseSound1, 0);
@@ -277,10 +347,7 @@ function loseJuice() {
     updateScrollSpeed(1);
 }
 /**
- * Shakes screen and flashs title and makes hazards scroll real fast on game over
-
-/**
- * Changes title value if player winsww
+ * Change title based on game state
  */
 function displayTitle() {
     if (hasWon) {
@@ -303,62 +370,4 @@ function updateHud() {
         livesElement.style.animation = "";
     }
 }
-/**
- * Dynamically creates the board
- */
-function createBoard() {
-    for (let rowIndex = 0; rowIndex < 7; rowIndex++) {
-        for (let colIndex = 0; colIndex < 100; colIndex++) {
-            const square = document.createElement("div");
-            square.classList.add("sqr");
-            square.id = `h${rowIndex * 100 + colIndex}`;
-            boardDisplayElement.appendChild(square);
-        }
-    }
-}
-/**
- * Displaying content on the board in the grid squares
- */
-function updateBoard() {
-    board.forEach((row, rowIndex) => {
-        row.forEach((cell, colIndex) => {
-            const square = document.getElementById(
-                `h${rowIndex * 100 + colIndex}`
-            );
-            // Check if there's a hazard in the current cell and displaying hazard sprite
-            if (cell === 1 && !hasWon) {
-                const hazardRejectLetter = document.createElement("img");
-                hazardRejectLetter.src = "./images/hazardRejectLetter.png";
-                hazardRejectLetter.alt = "Rejection Letter";
-                square.appendChild(hazardRejectLetter);
-            } else if (cell === 2 && !hasWon) {
-                const hazardSpamFilter = document.createElement("img");
-                hazardSpamFilter.src = "./images/hazardSpamFilter.png";
-                hazardSpamFilter.alt = "Spam Filter";
-                square.appendChild(hazardSpamFilter);
-            } else if (cell === 3 && !hasWon) {
-                const hazardATSBot = document.createElement("img");
-                hazardATSBot.src = "./images/hazardATSBot.png";
-                hazardATSBot.alt = "ATS Bot";
-                square.appendChild(hazardATSBot);
-            } else {
-                square.textContent = "";
-            }
-            // Check if the player is in the current cell
-            if (
-                playerPosition.row === rowIndex &&
-                playerPosition.col === colIndex
-            ) {
-                //if it is change the content to player sprite
-                playerSprite.src = "./images/playerSprite.png";
-                playerSprite.alt = "Player";
-                square.appendChild(playerSprite);
-                playerSprite.classList.add("player");
-            }
-        });
-    });
-    hazardCollision();
-    checkWin();
-    updateHud();
-    displayTitle();
-}
+
