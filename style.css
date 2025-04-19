@@ -13,6 +13,8 @@ body {
     min-height: 100vh;
     font-family: "Nova Square", system-ui;
     margin: 0;
+    overflow-y: hidden;
+    overflow-x: hidden;
 }
 button {
     border-radius: 10px;

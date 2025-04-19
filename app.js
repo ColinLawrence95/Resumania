@@ -26,6 +26,7 @@ let level;
 let boardHeight = 7
 let boardWidth = 100;
 let totalLevels = 10;
+
 //sounds
 let moveSoundVolume = 0.5;
 let backgroundVolume = 0.02;
